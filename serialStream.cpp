@@ -148,40 +148,47 @@ void serialStreamThread(){
     int packets_cnt = 0;
 
     while( !quitSerial ) {
-        int n = read(serialPort, buffer_receive, 1);
-        for(int i =0; i < n; i++) {
-            serialParser->parse_next_byte(buffer_receive[i], &serialParser->packet);
-            if (serialParser->ready) {
+        try {
+            int n = read(serialPort, buffer_receive, 1);
+            for (int i = 0; i < n; i++) {
+                serialParser->parse_next_byte(buffer_receive[i], &serialParser->packet);
+                if (serialParser->ready) {
 
-                if (fps_cnt == FPS_MAX_CNT) {
-                    t1 = get_us();
-                    fps = (float)fps_cnt/(float)(t1 - t0)*1.0e6f;
-                    t0 = get_us();
-                    fps_cnt = 0;
-                    std::cout << color_fmt_blue << "serialThread:: FPS = " << std::fixed << std::setprecision(2) << fps << "fps" << color_fmt_reset << std::endl;
-                } else {
-                    fps_cnt++;
-                };
+                    if (fps_cnt == FPS_MAX_CNT) {
+                        t1 = get_us();
+                        fps = (float) fps_cnt / (float) (t1 - t0) * 1.0e6f;
+                        t0 = get_us();
+                        fps_cnt = 0;
+                        std::cout << color_fmt_blue << "serialThread:: FPS = " << std::fixed << std::setprecision(2)
+                                  << fps << "fps" << color_fmt_reset << std::endl;
+                    } else {
+                        fps_cnt++;
+                    };
 
-                IMUMessageStruct msg;
-                msg.ts = get_us();
-                msg.dthe[0] =serialParser->packet.dangle[0]*adis_coeff;
-                msg.dthe[1] = serialParser->packet.dangle[1]*adis_coeff;
-                msg.dthe[2] = serialParser->packet.dangle[2]*adis_coeff;
-                msg.adc[0] = serialParser->packet.adc[0];
-                msg.adc[1] = serialParser->packet.adc[1];
-                msg.adc[2] = serialParser->packet.adc[2];
-                //std::cout << "serialThread:: Got message: {" << std::scientific << std::setprecision( 2 ) << msg.dthe[0] << "; " << msg.dthe[1] << "; " << msg.dthe[2]  << "}" << std::endl;
-                if (cameraStarted) {
-                    if (queueSerial.push(msg) == false) {
-                        std::cout << "serialThread:: Error!::" << "Queue full!" << std::endl;
-                        exit_flag = 1;
-                        quitSerial = true;
-                        break;
+                    IMUMessageStruct msg;
+                    msg.ts = get_us();
+                    msg.dthe[0] = serialParser->packet.dangle[0] * adis_coeff;
+                    msg.dthe[1] = serialParser->packet.dangle[1] * adis_coeff;
+                    msg.dthe[2] = serialParser->packet.dangle[2] * adis_coeff;
+                    msg.adc[0] = serialParser->packet.adc[0];
+                    msg.adc[1] = serialParser->packet.adc[1];
+                    msg.adc[2] = serialParser->packet.adc[2];
+                    //std::cout << "serialThread:: Got message: {" << std::scientific << std::setprecision( 2 ) << msg.dthe[0] << "; " << msg.dthe[1] << "; " << msg.dthe[2]  << "}" << std::endl;
+                    if (cameraStarted) {
+                        if (queueSerial.push(msg) == false) {
+                            std::cout << "serialThread:: Error!::" << "Queue full!" << std::endl;
+                            exit_flag = 1;
+                            quitSerial = true;
+                            break;
+                        }
                     }
+                    packets_cnt++;
                 }
-                packets_cnt++;
             }
+        }
+        catch (int e) {
+            std::cout << "SERIAL thread exception: " << e << std::endl;
+            abort();
         }
     }
     IMUMessageStruct msg;

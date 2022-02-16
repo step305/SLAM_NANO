@@ -111,198 +111,206 @@ void syncThread() {
     cv::Mat emptyMat;
 
     while (!quitSync) {
-        CAMMessageStruct feature_msg;
+        try {
+            CAMMessageStruct feature_msg;
 
-        if (queueSerial.pop(crh_msg)) {
-            if (sync_imu == false) {
-                while (queueCamera.pop(feature_msg));
-                queueCamera.push(feature_msg);
-            }
-            sync_imu = true;
-            if (fps_imu_cnt == FPS_MAX_CNT) {
-                t1_imu = get_us();
-                fps_imu = (float)fps_imu_cnt/(float)(t1_imu - t0_imu)*1.0e6f;
-                t0_imu = get_us();
-                fps_imu_cnt = 0;
-                std::cout << color_fmt_green << "syncThread:: IMU FPS = " << std::fixed << std::setprecision(2) << fps_imu << "fps" << color_fmt_reset << std::endl;
-            } else {
-                fps_imu_cnt++;
-            };
-            packet.add_imu_data(crh_msg.dthe, crh_msg.adc);
-            packet.ts = crh_msg.ts;
-            packet.frame = emptyMat;
-            packet.sync = false;
-            log_imu.push_back(packet);
-            if (sync_camera) {
-                if (queueSLAM.push(packet) == false) {
-                    std::cout << color_fmt_green << "syncThread:: Error!::" << "SLAM queue full!" << color_fmt_reset
-                              << std::endl;
-                    exit_flag = 1;
-                    quitSync = true;
-                    break;
+            if (queueSerial.pop(crh_msg)) {
+                if (sync_imu == false) {
+                    while (queueCamera.pop(feature_msg));
+                    queueCamera.push(feature_msg);
                 }
-            }
-            //std::cout << color_fmt_green << "syncThread:: imu sync" << color_fmt_reset << std::endl;
-        };
-
-//        if (queueIMU.pop(imu_msg)) {
-//            if (sync_imu == false) {
-//                while (queueCamera.pop(feature_msg));
-//                queueCamera.push(feature_msg);
-//            }
-//            sync_imu = true;
-//            if (fps_imu_cnt == FPS_MAX_CNT) {
-//                t1_imu = get_us();
-//                fps_imu = (float)fps_imu_cnt/(float)(t1_imu - t0_imu)*1.0e6f;
-//                t0_imu = get_us();
-//                fps_imu_cnt = 0;
-//                std::cout << color_fmt_green << "syncThread:: IMU FPS = " << std::fixed << std::setprecision(2) << fps_imu << "fps" << color_fmt_reset << std::endl;
-//            } else {
-//                fps_imu_cnt++;
-//            };
-//            packet.add_imu_data(imu_msg.rate, imu_msg.adc);
-//            packet.ts = imu_msg.ts;
-//            packet.sync = false;
-//            log_imu.push_back(packet);
-//            if (sync_camera) {
-//                if (queueSLAM.push(packet) == false) {
-//                    std::cout << color_fmt_green << "syncThread:: Error!::" << "SLAM queue full!" << color_fmt_reset
-//                              << std::endl;
-//                    exit_flag = 1;
-//                    quitSync = true;
-//                    break;
-//                }
-//            }
-//            //std::cout << color_fmt_green << "syncThread:: imu sync" << color_fmt_reset << std::endl;
-//        };
-
-        if (queueCamera.pop(feature_msg)) {
-            if (sync_camera == false) {
-                while (queueSerial.pop(crh_msg));
-            }
-            sync_camera = true;
-            if (fps_orb_cnt == FPS_MAX_CNT) {
-                t1_orb = get_us();
-                fps_orb = (float)fps_orb_cnt/(float)(t1_orb - t0_orb)*1.0e6f;
-                t0_orb = get_us();
-                fps_orb_cnt = 0;
-                std::cout << color_fmt_green << "syncThread:: Features FPS = " << std::fixed << std::setprecision(2) << fps_orb << "fps" << color_fmt_reset << std::endl;
-            } else {
-                fps_orb_cnt++;
-            };
-            packet.ts = feature_msg.ts;
-            packet.add_features_data(feature_msg.descriptors, feature_msg.points);
-            packet.sync = true;
-            log_feature.push_back(packet);
-            packet.frame = feature_msg.frame;
-            if (sync_imu) {
-                if (queueSLAM.push(packet) == false) {
-                    std::cout << color_fmt_green << "syncThread:: Error!::" << "SLAM queue full!" << color_fmt_reset
-                              << std::endl;
-                    exit_flag = 1;
-                    quitSync = true;
-                    break;
+                sync_imu = true;
+                if (fps_imu_cnt == FPS_MAX_CNT) {
+                    t1_imu = get_us();
+                    fps_imu = (float) fps_imu_cnt / (float) (t1_imu - t0_imu) * 1.0e6f;
+                    t0_imu = get_us();
+                    fps_imu_cnt = 0;
+                    std::cout << color_fmt_green << "syncThread:: IMU FPS = " << std::fixed << std::setprecision(2)
+                              << fps_imu << "fps" << color_fmt_reset << std::endl;
+                } else {
+                    fps_imu_cnt++;
+                };
+                packet.add_imu_data(crh_msg.dthe, crh_msg.adc);
+                packet.ts = crh_msg.ts;
+                packet.frame = emptyMat;
+                packet.sync = false;
+                log_imu.push_back(packet);
+                if (sync_camera) {
+                    if (queueSLAM.push(packet) == false) {
+                        std::cout << color_fmt_green << "syncThread:: Error!::" << "SLAM queue full!" << color_fmt_reset
+                                  << std::endl;
+                        exit_flag = 1;
+                        quitSync = true;
+                        break;
+                    }
                 }
-            }
-            if (!LOG_SLAM_VIDEO) {
-                video.write(feature_msg.frame);
-            } else {
-                //Draw matched features
-//                for (const auto &pt : matched_points)
-//                    drawMarker(feature_msg.frame, pt, cv::Scalar(0, 255, 255), cv::MARKER_SQUARE, 10, 4, 16);
+                //std::cout << color_fmt_green << "syncThread:: imu sync" << color_fmt_reset << std::endl;
+            };
+
+            //        if (queueIMU.pop(imu_msg)) {
+            //            if (sync_imu == false) {
+            //                while (queueCamera.pop(feature_msg));
+            //                queueCamera.push(feature_msg);
+            //            }
+            //            sync_imu = true;
+            //            if (fps_imu_cnt == FPS_MAX_CNT) {
+            //                t1_imu = get_us();
+            //                fps_imu = (float)fps_imu_cnt/(float)(t1_imu - t0_imu)*1.0e6f;
+            //                t0_imu = get_us();
+            //                fps_imu_cnt = 0;
+            //                std::cout << color_fmt_green << "syncThread:: IMU FPS = " << std::fixed << std::setprecision(2) << fps_imu << "fps" << color_fmt_reset << std::endl;
+            //            } else {
+            //                fps_imu_cnt++;
+            //            };
+            //            packet.add_imu_data(imu_msg.rate, imu_msg.adc);
+            //            packet.ts = imu_msg.ts;
+            //            packet.sync = false;
+            //            log_imu.push_back(packet);
+            //            if (sync_camera) {
+            //                if (queueSLAM.push(packet) == false) {
+            //                    std::cout << color_fmt_green << "syncThread:: Error!::" << "SLAM queue full!" << color_fmt_reset
+            //                              << std::endl;
+            //                    exit_flag = 1;
+            //                    quitSync = true;
+            //                    break;
+            //                }
+            //            }
+            //            //std::cout << color_fmt_green << "syncThread:: imu sync" << color_fmt_reset << std::endl;
+            //        };
+
+            if (queueCamera.pop(feature_msg)) {
+                if (sync_camera == false) {
+                    while (queueSerial.pop(crh_msg));
+                }
+                sync_camera = true;
+                if (fps_orb_cnt == FPS_MAX_CNT) {
+                    t1_orb = get_us();
+                    fps_orb = (float) fps_orb_cnt / (float) (t1_orb - t0_orb) * 1.0e6f;
+                    t0_orb = get_us();
+                    fps_orb_cnt = 0;
+                    std::cout << color_fmt_green << "syncThread:: Features FPS = " << std::fixed << std::setprecision(2)
+                              << fps_orb << "fps" << color_fmt_reset << std::endl;
+                } else {
+                    fps_orb_cnt++;
+                };
+                packet.ts = feature_msg.ts;
+                packet.add_features_data(feature_msg.descriptors, feature_msg.points);
+                packet.sync = true;
+                log_feature.push_back(packet);
+                packet.frame = feature_msg.frame;
+                if (sync_imu) {
+                    if (queueSLAM.push(packet) == false) {
+                        std::cout << color_fmt_green << "syncThread:: Error!::" << "SLAM queue full!" << color_fmt_reset
+                                  << std::endl;
+                        exit_flag = 1;
+                        quitSync = true;
+                        break;
+                    }
+                }
+                if (!LOG_SLAM_VIDEO) {
+                    video.write(feature_msg.frame);
+                } else {
+                    //Draw matched features
+                    //                for (const auto &pt : matched_points)
+                    //                    drawMarker(feature_msg.frame, pt, cv::Scalar(0, 255, 255), cv::MARKER_SQUARE, 10, 4, 16);
+
+                    //Draw all map features
+                    //                for (const auto &pt : all_points)
+                    //                    drawMarker(feature_msg.frame, pt, cv::Scalar(0, 200, 0), cv::MARKER_TILTED_CROSS, 5, 3, 16);
+
+                    //Draw erased features
+                    //                for (const auto &pt : erased_points)
+                    //                    drawMarker(feature_msg.frame, pt, cv::Scalar(0, 0, 255), cv::MARKER_SQUARE, 10, 4, 16);
+
+                    //Display Angles
+                    //                std::stringstream stream;
+                    //                stream << std::fixed << std::setprecision(1);
+                    //                if (slam_log_msg.bwx >= 0)
+                    //                    stream << "bwx +" << slam_log_msg.bwx * 180.0f / 3.1415f * 3600.0f;
+                    //                else
+                    //                    stream << "bwx " << slam_log_msg.bwx * 180.0f / 3.1415f * 3600.0f;
+                    //                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 300), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
+                    //                            cv::Scalar(0, 0, 255), 2);
+                    //                stream.str("");
+
+                    //                if (slam_log_msg.bwy >= 0)
+                    //                    stream << "bwy +" << slam_log_msg.bwy * 180.0f / 3.1415f * 3600.0f;
+                    //                else
+                    //                    stream << "bwy " << slam_log_msg.bwy * 180.0f / 3.1415f * 3600.0f;
+                    //                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 330), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
+                    //                            cv::Scalar(0, 0, 255), 2);
+                    //                stream.str("");
+
+                    //                if (slam_log_msg.bwz >= 0)
+                    //                    stream << "bwz +" << slam_log_msg.bwz * 180.0f / 3.1415f * 3600.0f;
+                    //                else
+                    //                    stream << "bwz " << slam_log_msg.bwz * 180.0f / 3.1415f * 3600.0f;
+                    //                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 360), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
+                    //                            cv::Scalar(0, 0, 255), 2);
+                    //                stream.str("");
+
+                    //                if (slam_log_msg.heading >= 0)
+                    //                    stream << "Z +" << slam_log_msg.heading;
+                    //                else
+                    //                    stream << "Z " << slam_log_msg.heading;
+                    //                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 390), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
+                    //                            cv::Scalar(0, 0, 255), 2);
+                    //                stream.str("");
+                    //                if (slam_log_msg.pitch >= 0)
+                    //                    stream << "Y +" << slam_log_msg.pitch;
+                    //                else
+                    //                    stream << "Y " << slam_log_msg.pitch;
+                    //                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 420), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
+                    //                            cv::Scalar(0, 0, 255), 2);
+                    //                stream.str("");
+                    //                if (slam_log_msg.roll >= 0)
+                    //                    stream << "X +" << slam_log_msg.roll;
+                    //                else
+                    //                    stream << "X " << slam_log_msg.roll;
+                    //                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 450), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
+                    //                            cv::Scalar(0, 0, 255), 2);
+                    video.write(feature_msg.frame);
+                }
+                packet.add_imu_data(sync_imu_packet, sync_imu_packet);
+                packet.ts = feature_msg.ts;
+                log_imu.push_back(packet);
+                //std::cout << color_fmt_green << "syncThread:: orb sync" << color_fmt_reset << std::endl;
+            };
+
+            if (queueLogSLAM.pop(slam_log_msg)) {
+                if (fps_slam_cnt == FPS_MAX_CNT) {
+                    t1_slam = get_us();
+                    fps_slam = (float) fps_slam_cnt / (float) (t1_slam - t0_slam) * 1.0e6f;
+                    t0_slam = get_us();
+                    fps_slam_cnt = 0;
+                    std::cout << color_fmt_green << "syncThread:: SLAM Log FPS = " << std::fixed << std::setprecision(2)
+                              << fps_slam << "fps" << color_fmt_reset << std::endl;
+                } else {
+                    fps_slam_cnt++;
+                };
+                slam_log_msg.frame = emptyMat;
+                log_slam.push_back(slam_log_msg);
+                //            if (slam_log_msg.sync) {
+                //                matched_points.clear();
+                //                erased_points.clear();
+                //                all_points.clear();
+                //                for (const auto &pt : slam_log_msg.matches)
+                //                    matched_points.push_back(pt);
 
                 //Draw all map features
-//                for (const auto &pt : all_points)
-//                    drawMarker(feature_msg.frame, pt, cv::Scalar(0, 200, 0), cv::MARKER_TILTED_CROSS, 5, 3, 16);
+                //               for (const auto &pt : slam_log_msg.all)
+                //                   all_points.push_back(pt);
 
                 //Draw erased features
-//                for (const auto &pt : erased_points)
-//                    drawMarker(feature_msg.frame, pt, cv::Scalar(0, 0, 255), cv::MARKER_SQUARE, 10, 4, 16);
-
-                //Display Angles
-//                std::stringstream stream;
-//                stream << std::fixed << std::setprecision(1);
-//                if (slam_log_msg.bwx >= 0)
-//                    stream << "bwx +" << slam_log_msg.bwx * 180.0f / 3.1415f * 3600.0f;
-//                else
-//                    stream << "bwx " << slam_log_msg.bwx * 180.0f / 3.1415f * 3600.0f;
-//                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 300), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
-//                            cv::Scalar(0, 0, 255), 2);
-//                stream.str("");
-
-//                if (slam_log_msg.bwy >= 0)
-//                    stream << "bwy +" << slam_log_msg.bwy * 180.0f / 3.1415f * 3600.0f;
-//                else
-//                    stream << "bwy " << slam_log_msg.bwy * 180.0f / 3.1415f * 3600.0f;
-//                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 330), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
-//                            cv::Scalar(0, 0, 255), 2);
-//                stream.str("");
-
-//                if (slam_log_msg.bwz >= 0)
-//                    stream << "bwz +" << slam_log_msg.bwz * 180.0f / 3.1415f * 3600.0f;
-//                else
-//                    stream << "bwz " << slam_log_msg.bwz * 180.0f / 3.1415f * 3600.0f;
-//                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 360), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
-//                            cv::Scalar(0, 0, 255), 2);
-//                stream.str("");
-
-//                if (slam_log_msg.heading >= 0)
-//                    stream << "Z +" << slam_log_msg.heading;
-//                else
-//                    stream << "Z " << slam_log_msg.heading;
-//                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 390), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
-//                            cv::Scalar(0, 0, 255), 2);
-//                stream.str("");
-//                if (slam_log_msg.pitch >= 0)
-//                    stream << "Y +" << slam_log_msg.pitch;
-//                else
-//                    stream << "Y " << slam_log_msg.pitch;
-//                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 420), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
-//                            cv::Scalar(0, 0, 255), 2);
-//                stream.str("");
-//                if (slam_log_msg.roll >= 0)
-//                    stream << "X +" << slam_log_msg.roll;
-//                else
-//                    stream << "X " << slam_log_msg.roll;
-//                cv::putText(feature_msg.frame, stream.str(), cv::Point2f(500, 450), cv::FONT_HERSHEY_COMPLEX_SMALL, 1,
-//                            cv::Scalar(0, 0, 255), 2);
-                video.write(feature_msg.frame);
+                //                for (const auto &pt : slam_log_msg.erased)
+                //                    erased_points.push_back(pt);
+                //            }
             }
-            packet.add_imu_data(sync_imu_packet, sync_imu_packet);
-            packet.ts = feature_msg.ts;
-            log_imu.push_back(packet);
-            //std::cout << color_fmt_green << "syncThread:: orb sync" << color_fmt_reset << std::endl;
-        };
-
-        if (queueLogSLAM.pop(slam_log_msg)) {
-            if (fps_slam_cnt == FPS_MAX_CNT) {
-                t1_slam = get_us();
-                fps_slam = (float) fps_slam_cnt / (float) (t1_slam - t0_slam) * 1.0e6f;
-                t0_slam = get_us();
-                fps_slam_cnt = 0;
-                std::cout << color_fmt_green << "syncThread:: SLAM Log FPS = " << std::fixed << std::setprecision(2)
-                          << fps_slam << "fps" << color_fmt_reset << std::endl;
-            } else {
-                fps_slam_cnt++;
-            };
-            slam_log_msg.frame = emptyMat;
-            log_slam.push_back(slam_log_msg);
-//            if (slam_log_msg.sync) {
-//                matched_points.clear();
-//                erased_points.clear();
-//                all_points.clear();
-//                for (const auto &pt : slam_log_msg.matches)
-//                    matched_points.push_back(pt);
-
-                //Draw all map features
- //               for (const auto &pt : slam_log_msg.all)
- //                   all_points.push_back(pt);
-
-                //Draw erased features
-//                for (const auto &pt : slam_log_msg.erased)
-//                    erased_points.push_back(pt);
-//            }
-        };
+        }
+        catch (int e) {
+            std::cout << "SYNC thread exception: " << e << std::endl;
+            abort();
+        }
     }
     queueSLAM.push(packet);
 

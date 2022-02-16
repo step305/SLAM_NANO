@@ -68,7 +68,7 @@ int ORBdetectorStreamThread() {
     //    quitCamera = true;
     //}
 
-    std::cout << color_fmt_red << "ORBThread:: ORB detector thread started." << color_fmt_reset << std::endl;
+    std::cout << color_fmt_yellow << "ORBThread:: ORB detector thread started." << color_fmt_reset << std::endl;
 
     //cv::VideoWriter video("video_slam.avi", cv::VideoWriter::fourcc('M','J','P','G'), FPS, cv::Size(640, 480), true);
     /*cv::VideoWriter video("appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! "
@@ -105,6 +105,16 @@ int ORBdetectorStreamThread() {
         frame = image_msg.frame;
         long long unsigned frame_ts = image_msg.ts;
 
+        if (fps_cnt == FPS_MAX_CNT) {
+            t1 = get_us();
+            fps = (float)fps_cnt/(float)(t1 - t0) * 1.0e6f;
+            t0 = get_us();
+            fps_cnt = 0;
+            std::cout << color_fmt_yellow << "ORBThread:: FPS = " << std::fixed << std::setprecision(2) << fps << "fps" << color_fmt_reset << std::endl;
+        } else {
+            fps_cnt++;
+        }
+
         if (frame.empty()){
             continue;
         }
@@ -116,16 +126,6 @@ int ORBdetectorStreamThread() {
         //    skip_frames = 0;
         //}
         cameraStarted = true;
-
-        if (fps_cnt == FPS_MAX_CNT) {
-            t1 = get_us();
-            fps = (float)fps_cnt/(float)(t1 - t0) * 1.0e6f;
-            t0 = get_us();
-            fps_cnt = 0;
-            std::cout << color_fmt_red << "ORBThread:: FPS = " << std::fixed << std::setprecision(2) << fps << "fps" << color_fmt_reset << std::endl;
-        } else {
-            fps_cnt++;
-        }
 
         cv::cuda::GpuMat gpu_frame1, gpu_frame2;
         cv::cuda::GpuMat gpu_gray_frame;
@@ -150,7 +150,7 @@ int ORBdetectorStreamThread() {
         if (d_keypoints.empty()) {
             CAMMessageStruct msg = {frame, descriptors, undist_points, frame_ts};
             if (queueCamera.push(msg) == false) {
-                std::cout << color_fmt_red << "ORBThread:: Error!::" << "Queue full!" << color_fmt_reset << std::endl;
+                std::cout << color_fmt_yellow << "ORBThread:: Error!::" << "Queue full!" << color_fmt_reset << std::endl;
                 exit_flag = 1;
                 quitCamera = true;
                 break;
@@ -220,9 +220,9 @@ int ORBdetectorStreamThread() {
         }*/
     }
 
-    std::cout << color_fmt_red << "ORBThread:: " << frames_cnt << "total" << color_fmt_reset << std::endl;
+    std::cout << color_fmt_yellow << "ORBThread:: " << frames_cnt << "total" << color_fmt_reset << std::endl;
 
-    std::cout << color_fmt_red << "ORBThread:: Finished!" << color_fmt_reset << std::endl;
+    std::cout << color_fmt_yellow << "ORBThread:: Finished!" << color_fmt_reset << std::endl;
 
     return 0;
 }

@@ -80,30 +80,37 @@ void fifoThread() {
     }
 
     while (!quitFIFO) {
-        if (queueFIFOSLAM.pop(packet_slam)) {
-            if (fps_cnt == FPS_MAX_CNT) {
-                t1 = get_us();
-                fps = (float) fps_cnt / (float) (t1 - t0) * 1.0e6f;
-                t0 = get_us();
-                fps_cnt = 0;
-                std::cout << color_fmt_green << "fifoThread:: SLAM FIFO in FPS = " << std::fixed << std::setprecision(2)
-                          << fps << "fps" << color_fmt_reset << std::endl;
-            } else {
-                fps_cnt++;
-            };
+        try {
+            if (queueFIFOSLAM.pop(packet_slam)) {
+                if (fps_cnt == FPS_MAX_CNT) {
+                    t1 = get_us();
+                    fps = (float) fps_cnt / (float) (t1 - t0) * 1.0e6f;
+                    t0 = get_us();
+                    fps_cnt = 0;
+                    std::cout << color_fmt_green << "fifoThread:: SLAM FIFO in FPS = " << std::fixed
+                              << std::setprecision(2)
+                              << fps << "fps" << color_fmt_reset << std::endl;
+                } else {
+                    fps_cnt++;
+                };
 
-            std::string json;
-            pack_data(packet_slam, json);
-            char const *out_buffer = json.c_str();
-            try {
-                int s_write = fprintf(wfd, "%s", out_buffer);
-                fflush(wfd);
+                std::string json;
+                pack_data(packet_slam, json);
+                char const *out_buffer = json.c_str();
+                try {
+                    int s_write = fprintf(wfd, "%s", out_buffer);
+                    fflush(wfd);
+                }
+                catch (int e) {
+                    quitFIFO = true;
+                    exit_flag = 1;
+                    break;
+                }
             }
-            catch (int e) {
-                quitFIFO = true;
-                exit_flag = 1;
-                break;
-            }
+        }
+        catch (int e) {
+            std::cout << "fifo thread exception: " << e << std::endl;
+            abort();
         }
     }
     fclose(wfd);
