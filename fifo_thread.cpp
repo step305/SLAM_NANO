@@ -47,6 +47,7 @@ void pack_data(SLAMLogMessageStruct &data,
     json = string_format("%s \"roll\": %0.3f,", json.c_str(), data.roll);
     json = string_format("%s \"nmatched\": %d,", json.c_str(), data.nmatched);
     json = string_format("%s \"bw\": [%0.3f, %0.3f, %0.3f], ", json.c_str(), data.bwx, data.bwy, data.bwz);
+    json = string_format("%s \"sw\": [%0.3f, %0.3f, %0.3f], ", json.c_str(), data.swx, data.swy, data.swz);
     json = string_format("%s \"frame\": \"%s\"", json.c_str(), encoded_frame_str.c_str());
     json = string_format("%s}\n", json.c_str());
     //json = string_format("%20ld :: %s", strlen(json.c_str()), json.c_str());
@@ -58,7 +59,8 @@ void fifoThread() {
     int fps_cnt = 0;
     float fps = 0.0f;
 
-    char filename[] = "/home/step305/SLAM_FIFO.tmp";
+    //char filename[] = "/home/step305/SLAM_FIFO.tmp";
+    char filename[] = "/home/sergey/SLAM_FIFO.tmp";
 
     std::cout << color_fmt_green << "fifoThread:: Connected" << color_fmt_reset << std::endl;
 
