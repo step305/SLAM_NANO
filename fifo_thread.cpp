@@ -25,12 +25,12 @@ void pack_data(SLAMLogMessageStruct &data,
 
         if (data.matched.size() > 0) {
             for (const auto &pt : data.matched)
-                cv::drawMarker(data.frame, pt, cv::Scalar(0, 255, 0), cv::MARKER_SQUARE, 2, 1, 8);
+                cv::drawMarker(data.frame, pt, cv::Scalar(0, 255, 0), cv::MARKER_SQUARE, 10, 1, 8);
         }
 
         if (data.observed.size() > 0) {
             for (const auto &pt : data.observed)
-                cv::drawMarker(data.frame, pt, cv::Scalar(255, 0, 0), cv::MARKER_SQUARE, 2, 1, 8);
+                cv::drawMarker(data.frame, pt, cv::Scalar(255, 0, 0), cv::MARKER_SQUARE, 10, 1, 8);
         }
 
         cv::imencode(".jpg", data.frame, buf);

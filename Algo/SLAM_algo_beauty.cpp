@@ -99,6 +99,8 @@ void SLAM_algo_process(SyncPacket packet, double angles[3], float *crh_out, doub
                        std::vector<cv::Point2f>  &observed, std::vector<cv::Point2f>  &matched) {
     if (packet.sync) {
         int num_features = packet.descriptors.size();
+        frame_descriptors.clear();
+        frame_points.clear();
         frame_descriptors.set_size(num_features, 32);
         frame_points.set_size(num_features, 2);
         for (int idx0 = 0; idx0 < num_features; idx0++) {

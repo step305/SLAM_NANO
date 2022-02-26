@@ -510,6 +510,9 @@ namespace SLAMALGO
         map->data[i] = map_data_new[i];
       }
     }
+    PPP.clear();
+    map_data_new.clear();
+    r1.clear();
   }
 
   //
@@ -839,7 +842,17 @@ namespace SLAMALGO
       // x = x + K * v;
       // 'vector_slam_gyro_data:372' updated = true;
       *updated = true;
+    } else {
+        Pnew.set_size(P.size(0), P.size(1));
+        boffset = P.size(0) * P.size(1);
+        for (i = 0; i < boffset; i++) {
+            Pnew[i] = P[i];
+        }
     }
+    PHt.clear();
+    W1.clear();
+    r.clear();
+
   }
 
   //
@@ -1756,6 +1769,7 @@ namespace SLAMALGO
                       i1];
                   }
                 }
+                index_keep.clear();
 
                 // 'vector_slam_gyro_data:158' if (updated)
                 if (updated) {
@@ -2120,6 +2134,10 @@ namespace SLAMALGO
         }
       }
     }
+    x.clear();
+    H.clear();
+    index_keep.clear();
+    delete_index.clear();
   }
 }
 

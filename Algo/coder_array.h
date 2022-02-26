@@ -93,9 +93,9 @@ class data_ptr {
     }
 
     ~data_ptr() {
-        if (owner_) {
+        //if (owner_) {
             CODER_DELETE(data_);
-        }
+        //}
     }
     SZ capacity() const {
         return capacity_;
@@ -104,9 +104,9 @@ class data_ptr {
         if (_n > capacity_) {
             T* new_data = CODER_NEW(T, _n);
             std::copy(data_, data_ + size_, new_data);
-            if (owner_) {
+            //if (owner_) {
                 CODER_DELETE(data_);
-            }
+            //}
             data_ = new_data;
             capacity_ = _n;
             owner_ = true;
@@ -123,9 +123,9 @@ class data_ptr {
 
   public:
     void set(T* _data, const SZ _sz) {
-        if (owner_) {
+        //if (owner_) {
             CODER_DELETE(data_);
-        }
+        //}
         data_ = _data;
         size_ = _sz;
         owner_ = false;
@@ -137,9 +137,9 @@ class data_ptr {
             size_ = _size;
             return;
         }
-        if (owner_) {
+        //if (owner_) {
             CODER_DELETE(data_);
-        }
+        //}
         data_ = CODER_NEW(T, _size);
         owner_ = true;
         size_ = _size;
@@ -179,9 +179,9 @@ class data_ptr {
     }
 
     void clear() {
-        if (owner_) {
+        //if (owner_) {
             CODER_DELETE(data_);
-        }
+        //}
         data_ = NULL;
         size_ = 0;
         capacity_ = 0;

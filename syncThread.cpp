@@ -48,6 +48,7 @@ void SyncPacket::add_features_data(cv::Mat descriptors, std::vector<cv::Point2f>
 
         SyncPacket::descriptors.push_back(desc);
     }
+    delete [] descriptor;
 }
 
 void append_dataset(const char* dataset_name, hid_t file_id, hid_t space_id, float* data) {
