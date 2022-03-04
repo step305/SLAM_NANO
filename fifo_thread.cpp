@@ -3,6 +3,7 @@
 //
 
 #include "fifo_thread.h"
+#include <cmath>
 
 typedef unsigned char uchar;
 
@@ -20,6 +21,8 @@ std::string string_format( const std::string& format, Args ... args )
 void pack_data(SLAMLogMessageStruct &data,
                std::string &json) {
     std::string encoded_frame_str;
+    double new_crh = 0.0;
+
     if (!data.frame.empty()) {
         std::vector<uchar> buf;
 
@@ -40,8 +43,13 @@ void pack_data(SLAMLogMessageStruct &data,
         encoded_frame_str = "None";
     }
 
+    if (isnan(data.crh)) {
+        new_crh = 0.0;
+    } else {
+        new_crh = data.crh;
+    }
     json = "{";
-    json = string_format("%s \"adc\": %0.3f,", json.c_str(), data.crh);
+    json = string_format("%s \"adc\": %0.3f,", json.c_str(), new_crh);
     json = string_format("%s \"yaw\": %0.3f,", json.c_str(), data.heading);
     json = string_format("%s \"pitch\": %0.3f,", json.c_str(), data.pitch);
     json = string_format("%s \"roll\": %0.3f,", json.c_str(), data.roll);
